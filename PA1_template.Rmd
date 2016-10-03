@@ -5,14 +5,53 @@ output:
     keep_md: true
 ---
 
+## Load necessary packages
+
+```{r}
+library(ggplot2)
+library(scales)
+library(Hmisc)
+```
 
 ## Loading and preprocessing the data
 
+Downlaod and unzip the data.
 
+```{r}
+FILE_URL <- 'https://d396qusza40orc.cloudfront.net/repdata%2Fdata%2Factivity.zip'
+FILE_NAME_ZIP <- 'activity.zip'
+FILE_NAME_CSV <- 'activity.csv'
+
+if (!file.exists(FILE_NAME_CSV)) {
+  download.file(FILE_URL, destfile=FILE_NAME_ZIP)
+  unzip(FILE_NAME_ZIP)
+}
+
+activities = read.csv(FILE_NAME_CSV)
+```
+
+Get summary of the data.
+
+```{r}
+summary(activities)
+```
+
+Notice we have some NAs in `steps`.
 
 ## What is mean total number of steps taken per day?
 
+Calculate sum of steps group by dates.
 
+```{r}
+activitiesStepsByDate <- tapply(activities$steps, activities$date, sum, na.rm=TRUE)
+head(activitiesStepsByDate)
+```
+
+Histogram of the total number of steps taken by date.
+
+```{r}
+
+```
 
 ## What is the average daily activity pattern?
 
