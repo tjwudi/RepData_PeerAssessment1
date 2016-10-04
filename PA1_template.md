@@ -121,9 +121,102 @@ activitiesStepsByDateMid = median(activitiesStepsByDate$stepsSum)
 ## What is the average daily activity pattern?
 
 
+```r
+activitiesStepsByInterval <- aggregate(
+  x=list(meanSteps=activities$steps),
+  by=list(interval=activities$interval),
+  FUN=mean,
+  na.rm=TRUE
+) 
+```
+
+Make a time series plot.
+
+
+```r
+ggplot(data=activitiesStepsByInterval, aes(x=interval, y=meanSteps)) +
+  geom_line() +
+  xlab('5-minute interval in a day') +
+  ylab('Average steps')
+```
+
+![](PA1_template_files/figure-html/unnamed-chunk-8-1.png)<!-- -->
+
+Find the interval with maximum average steps.
+
+
+```r
+maxStepsInterval <- which.max(activitiesStepsByInterval$meanSteps)
+```
+
+It's the 104th interval.
 
 ## Imputing missing values
 
 
+```r
+countNaSteps = length(which(is.na(activities$steps)))
+```
+
+There are 2304 NA steps values.
+
+Fill NA values with mean number.
+
+
+```r
+activitiesImputed <- activities
+activitiesImputed$steps <- impute(activitiesImputed$steps, fun=mean)
+```
+
+Plot the histogram.
+
+
+```r
+activitiesStepsByDateImputed <- aggregate(
+  activitiesImputed[, c('steps')],
+  by=list(activitiesImputed$date),
+  sum,
+  na.rm=TRUE)
+names(activitiesStepsByDateImputed) <- c('date', 'stepsSum')
+
+ggplot(data=activitiesStepsByDateImputed,
+       aes(date, stepsSum)) +
+  stat_summary(fun.y=sum, geom='bar') +
+  theme(axis.text.x = element_text(angle=90, hjust=1))
+```
+
+![](PA1_template_files/figure-html/unnamed-chunk-12-1.png)<!-- -->
+
+Calculate mean and median.
+
+
+```r
+activitiesStepsByDateMeanImputed = mean(activitiesStepsByDateImputed$stepsSum)
+activitiesStepsByDateMidImputed = median(activitiesStepsByDateImputed$stepsSum)
+```
+
+* Mean number of steps taken per day (after imputing): 1.0766189\times 10^{4}
+* Median number of steps taken per day (after imputing): 1.0766189\times 10^{4}
 
 ## Are there differences in activity patterns between weekdays and weekends?
+
+Create a new factor variable in the dataset with two levels – “weekday” and “weekend” indicating whether a given date is a weekday or weekend day.
+
+
+```r
+activitiesImputed$dateType <- ifelse(as.POSIXlt(activitiesImputed$date)$wday %in% c(0,6), 'weekend', 'weekday')
+```
+
+Make a panel plot containing a time series plot
+
+
+```r
+averagedActivityDataImputed <- aggregate(steps ~ interval + dateType, data=activitiesImputed, mean)
+ggplot(averagedActivityDataImputed, aes(interval, steps)) + 
+    geom_line() + 
+    facet_grid(dateType ~ .) +
+    xlab("5-minute interval") + 
+    ylab("avarage number of steps")
+```
+
+![](PA1_template_files/figure-html/unnamed-chunk-15-1.png)<!-- -->
